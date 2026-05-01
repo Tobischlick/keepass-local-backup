@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Check for the --now or -n flag
+WAIT_ENABLED=true
+if [[ "$1" == "--now" ]] || [[ "$1" == "-n" ]]; then
+    WAIT_ENABLED=false
+fi
+
 # 1. Immediate check for .env file
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$SCRIPT_DIR/.env" ]; then
@@ -22,14 +28,17 @@ else
     exit 1
 fi
 
-# 2. Inform the user about the wait
-echo "⏳ Waiting 30 seconds for OneDrive to mount before starting backup..."
-sleep 30
+# 2. Conditional Wait
+if [ "$WAIT_ENABLED" = true ]; then
+    echo "⏳ Waiting 30 seconds for OneDrive to mount (System Startup Mode)..."
+    sleep 30
+else
+    echo "🚀 Skipping wait (Manual Mode)..."
+fi
 
 # 3. Proceed with the backup
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
 
-# Ensure the backup directory exists
 if mkdir -p "$BACKUP_DIR"; then
     echo "✔ Backup directory verified."
 else
@@ -38,7 +47,6 @@ else
 fi
 
 if [ -f "$SOURCE_DB" ]; then
-    # Perform the copy
     FILENAME=$(basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${FILENAME}_backup_$TIMESTAMP.kdbx"
 
@@ -51,6 +59,5 @@ if [ -f "$SOURCE_DB" ]; then
     echo "   Saved to: $DESTINATION"
 else
     echo "✘ Error: Source database not found at: $SOURCE_DB"
-    echo "   (Ensure OneDrive is mounted and the path is correct.)"
     exit 1
 fi
