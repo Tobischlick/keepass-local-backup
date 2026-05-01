@@ -26,6 +26,7 @@ if [ -f "$SCRIPT_DIR/.env" ]; then
     echo "------------------------------------------------"
 else
     echo "✘ Error: .env file not found at $SCRIPT_DIR/.env"
+    notify-send "KeePass Backup" "✘ Error: .env file not found!" -u critical
     exit 1
 fi
 
@@ -33,6 +34,7 @@ fi
 if [ "$WAIT_ENABLED" = true ]; then
     DELAY=${SLEEP_DELAY:-30}
     echo "⏳ Waiting $DELAY seconds for OneDrive to mount (System Startup Mode)..."
+    notify-send "KeePass Backup" "⏳ System startup: Waiting $DELAY\s for mount..." -t 3000
     sleep "$DELAY"
 else
     echo "🚀 Skipping wait (Manual Mode)..."
@@ -46,6 +48,7 @@ if mkdir -p "$BACKUP_DIR"; then
     echo "✔ Backup directory verified."
 else
     echo "✘ Error: Could not create or access backup directory: $BACKUP_DIR"
+    notify-send "KeePass Backup" "✘ Error: Backup directory inaccessible!" -u critical
     exit 1
 fi
 
@@ -54,15 +57,21 @@ if [ -f "$SOURCE_DB" ]; then
     FILENAME=$(basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${FILENAME}_backup_$TIMESTAMP.kdbx"
 
-    cp "$SOURCE_DB" "$DESTINATION"
+    if cp "$SOURCE_DB" "$DESTINATION"; then
+        # Cleanup old backups
+        find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
 
-    # Cleanup old backups
-    find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
-
-    echo "✅ Success: Backup of $FILENAME completed."
-    echo "   Saved to: $DESTINATION"
+        echo "✅ Success: Backup of $FILENAME completed."
+        echo "   Saved to: $DESTINATION"
+        notify-send "KeePass Backup" "✅ Backup successful: $FILENAME" -i security-high -t 5000
+    else
+        echo "✘ Error: Copy failed."
+        notify-send "KeePass Backup" "✘ Error: File copy failed!" -u critical
+        exit 1
+    fi
 else
     echo "✘ Error: Source database not found at: $SOURCE_DB"
     echo "   (Ensure OneDrive is mounted and the path is correct.)"
+    notify-send "KeePass Backup" "✘ Error: Source database not found!" -u critical
     exit 1
 fi
