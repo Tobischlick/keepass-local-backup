@@ -58,6 +58,24 @@ handle_wait() {
     fi
 }
 
+# Function to verify the file is actually a KeePass database
+verify_file_type() {
+    local file_path="$1"
+
+    # MIME check: standard KeePass files are application/x-keepass2
+    # or application/octet-stream (general binary)
+    local mime_type
+    mime_type=$(file -b --mime-type "$file_path")
+
+    if [[ "$mime_type" == "application/x-keepass2" ]] || [[ "$mime_type" == "application/octet-stream" ]]; then
+        echo "🔒 File type verified ($mime_type)."
+        return 0
+    else
+        echo "⚠️  Validation Error: File is $mime_type, not a KeePass database."
+        return 1
+    fi
+}
+
 # Function to verify file integrity using SHA-256
 verify_checksum() {
     local source_file="$1"
@@ -103,6 +121,13 @@ fi
 
 # 4. Execute Backup
 if [[ -f "$SOURCE_DB" ]]; then
+
+    # Verify file signature before doing anything
+    if ! verify_file_type "$SOURCE_DB"; then
+        log_message "error" "KeePass Backup" "✘ Error: Source is not a valid KeePass file!"
+        exit 1
+    fi
+
     TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
     FILENAME=$(basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${FILENAME}_backup_$TIMESTAMP.kdbx"

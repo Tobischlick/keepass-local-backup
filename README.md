@@ -12,6 +12,7 @@ A robust, privacy-conscious shell script designed to create timestamped local ba
 - **Auto-Cleanup**: Automatically purges old backups based on a custom retention period.
 - **Desktop Notifications**: Sends native system alerts for successful backups and critical errors using `notify-send`.
 - **Checksum Verification**: To make sure the backup is created correctly, a checksum is calculated to ensure integrity.
+- **File Type Verification**: Checks, whether the file is actually a valid keepass file.
 
 ---
 
