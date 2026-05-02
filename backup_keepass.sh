@@ -1,77 +1,101 @@
 #!/bin/bash
 
-# Check for the --now or -n flag to skip the wait
-WAIT_ENABLED=true
-if [[ "$1" == "--now" ]] || [[ "$1" == "-n" ]]; then
-    WAIT_ENABLED=false
-fi
+# --- Functions ---
 
-# 1. Immediate check for .env file
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$SCRIPT_DIR/.env" ]; then
-    echo "✔ Found .env file at $SCRIPT_DIR/.env"
+# Function to handle desktop notifications and terminal output
+log_message() {
+    local type="$1"    # "success", "error", or "info"
+    local title="$2"
+    local message="$3"
+    local urgency="normal"
+    local icon="info"
 
-    # Load configuration
-    set -a
-    source "$SCRIPT_DIR/.env"
-    set +a
+    echo "$message"
 
-    # Print properties for verification
-    echo "------------------------------------------------"
-    echo "  Properties Loaded:"
-    echo "  SOURCE_DB:    $SOURCE_DB"
-    echo "  BACKUP_DIR:   $BACKUP_DIR"
-    echo "  RETENTION:    $RETENTION_DAYS days"
-    echo "  STARTUP WAIT: ${SLEEP_DELAY:-30} seconds"
-    echo "------------------------------------------------"
-else
-    echo "✘ Error: .env file not found at $SCRIPT_DIR/.env"
-    notify-send "KeePass Backup" "✘ Error: .env file not found!" -u critical
+    if [[ "$type" == "error" ]]; then
+        urgency="critical"
+        icon="dialog-error"
+    elif [[ "$type" == "success" ]]; then
+        icon="security-high"
+    fi
+
+    notify-send "$title" "$message" -u "$urgency" -i "$icon" -t 5000
+}
+
+# Function to load and verify the .env file
+load_config() {
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ -f "$script_dir/.env" ]]; then
+        set -a
+        source "$script_dir/.env"
+        set +a
+
+        # Terminal-only logging for properties
+        echo "✔ Found .env file at $script_dir/.env"
+        echo "------------------------------------------------"
+        echo "  Properties Loaded:"
+        echo "  SOURCE_DB:    $SOURCE_DB"
+        echo "  BACKUP_DIR:   $BACKUP_DIR"
+        echo "  RETENTION:    $RETENTION_DAYS days"
+        echo "  STARTUP WAIT: ${SLEEP_DELAY:-30} seconds"
+        echo "------------------------------------------------"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to handle the startup delay
+handle_wait() {
+    if [[ "$1" == "--now" ]] || [[ "$1" == "-n" ]]; then
+        echo "🚀 Skipping wait (Manual Mode)..."
+    else
+        local delay=${SLEEP_DELAY:-30}
+        log_message "info" "KeePass Backup" "⏳ System startup: Waiting ${delay}s for mount..."
+        sleep "$delay"
+    fi
+}
+
+# Function to perform the cleanup of old files
+cleanup_old_backups() {
+    find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
+    echo "🧹 Cleaned up backups older than $RETENTION_DAYS days."
+}
+
+# --- Main Execution Logic ---
+
+# 1. Load Config
+if ! load_config; then
+    log_message "error" "KeePass Backup" "✘ Error: .env file not found!"
     exit 1
 fi
 
-# 2. Conditional Wait using SLEEP_DELAY (defaults to 30 if not defined in .env)
-if [ "$WAIT_ENABLED" = true ]; then
-    DELAY=${SLEEP_DELAY:-30}
-    echo "⏳ Waiting $DELAY seconds for OneDrive to mount (System Startup Mode)..."
-    notify-send "KeePass Backup" "⏳ System startup: Waiting $DELAY\s for mount..." -t 3000
-    sleep "$DELAY"
-else
-    echo "🚀 Skipping wait (Manual Mode)..."
-fi
+# 2. Handle Timing
+handle_wait "$1"
 
-# 3. Proceed with the backup
-TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
-
-# Ensure the backup directory exists
-if mkdir -p "$BACKUP_DIR"; then
-    echo "✔ Backup directory verified."
-else
-    echo "✘ Error: Could not create or access backup directory: $BACKUP_DIR"
-    notify-send "KeePass Backup" "✘ Error: Backup directory inaccessible!" -u critical
+# 3. Verify Directory
+if ! mkdir -p "$BACKUP_DIR"; then
+    log_message "error" "KeePass Backup" "✘ Error: Backup directory inaccessible!"
     exit 1
 fi
 
-if [ -f "$SOURCE_DB" ]; then
-    # Perform the copy
+# 4. Execute Backup
+if [[ -f "$SOURCE_DB" ]]; then
+    TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
     FILENAME=$(basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${FILENAME}_backup_$TIMESTAMP.kdbx"
 
     if cp "$SOURCE_DB" "$DESTINATION"; then
-        # Cleanup old backups
-        find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
-
-        echo "✅ Success: Backup of $FILENAME completed."
-        echo "   Saved to: $DESTINATION"
-        notify-send "KeePass Backup" "✅ Backup successful: $FILENAME" -i security-high -t 5000
+        cleanup_old_backups
+        log_message "success" "KeePass Backup" "✅ Backup successful: $FILENAME"
+        echo "📂 Saved to: $DESTINATION"
     else
-        echo "✘ Error: Copy failed."
-        notify-send "KeePass Backup" "✘ Error: File copy failed!" -u critical
+        log_message "error" "KeePass Backup" "✘ Error: File copy failed!"
         exit 1
     fi
 else
-    echo "✘ Error: Source database not found at: $SOURCE_DB"
-    echo "   (Ensure OneDrive is mounted and the path is correct.)"
-    notify-send "KeePass Backup" "✘ Error: Source database not found!" -u critical
+    log_message "error" "KeePass Backup" "✘ Error: Source database not found!"
     exit 1
 fi
