@@ -41,6 +41,7 @@ nano .env
 ### 3. Permissions
 Make the script executable:
 ```bash
+cd src
 chmod +x backup_keepass.sh
 ```
 
@@ -69,7 +70,7 @@ SLEEP_DELAY=30
 Use this mode when you are already logged in and want to trigger a backup instantly. The `--now` or `-n` flag bypasses the configured `SLEEP_DELAY`.
 ```bash
 # Navigate to the directory
-cd ~/keepass-local-backup
+cd ~/keepass-local-backup/src
 
 # Run with the 'now' flag
 ./backup_keepass.sh --now
