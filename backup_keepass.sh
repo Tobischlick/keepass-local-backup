@@ -31,6 +31,16 @@ load_config() {
         set -a
         source "$script_dir/.env"
         set +a
+
+        # Terminal-only logging for properties
+        echo "✔ Found .env file at $script_dir/.env"
+        echo "------------------------------------------------"
+        echo "  Properties Loaded:"
+        echo "  SOURCE_DB:    $SOURCE_DB"
+        echo "  BACKUP_DIR:   $BACKUP_DIR"
+        echo "  RETENTION:    $RETENTION_DAYS days"
+        echo "  STARTUP WAIT: ${SLEEP_DELAY:-30} seconds"
+        echo "------------------------------------------------"
         return 0
     else
         return 1
@@ -80,6 +90,7 @@ if [[ -f "$SOURCE_DB" ]]; then
     if cp "$SOURCE_DB" "$DESTINATION"; then
         cleanup_old_backups
         log_message "success" "KeePass Backup" "✅ Backup successful: $FILENAME"
+        echo "📂 Saved to: $DESTINATION"
     else
         log_message "error" "KeePass Backup" "✘ Error: File copy failed!"
         exit 1
