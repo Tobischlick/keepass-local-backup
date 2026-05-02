@@ -1,0 +1,35 @@
+name: Shell Logic Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Make all test scripts executable at once
+      - name: Make test scripts executable
+        run: chmod +x tests/*.sh
+
+      # 3. Execute each test suite
+      # We run them individually so the GitHub log shows exactly which one is running
+      - name: Run Validation Tests
+        run: ./tests/test_validation.sh
+
+      - name: Run Integrity Tests
+        run: ./tests/test_integrity.sh
+
+      - name: Run Config & Timing Tests
+        run: ./tests/test_config.sh
