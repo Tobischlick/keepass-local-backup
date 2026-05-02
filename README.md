@@ -1,4 +1,5 @@
 ![Tests](https://github.com/Tobischlick/keepass-local-backup/actions/workflows/tests.yml/badge.svg)
+![ShellCheck](https://github.com/Tobischlick/keepass-local-backup/actions/workflows/lint.yml/badge.svg)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/Tobischlick/keepass-local-backup)
 ![GitHub](https://img.shields.io/github/license/Tobischlick/keepass-local-backup)
 ![GitHub top language](https://img.shields.io/github/languages/top/Tobischlick/keepass-local-backup)

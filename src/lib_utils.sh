@@ -21,11 +21,12 @@ log_message() {
 }
 
 load_config() {
-    local script_dir
-    local root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    local root_dir
+    root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
     if [[ -f "$root_dir/.env" ]]; then
         set -a
+        # shellcheck source=/dev/null
         source "$root_dir/.env"
         set +a
         echo "✔ Found .env file at $root_dir/.env"
@@ -71,8 +72,12 @@ verify_checksum() {
     local source_file="$1"
     local backup_file="$2"
     echo "🔍 Verifying integrity (SHA-256)..."
-    local source_hash=$(sha256sum "$source_file" | awk '{print $1}')
-    local backup_hash=$(sha256sum "$backup_file" | awk '{print $1}')
+
+    local source_hash
+    local backup_hash
+
+    source_hash=$(sha256sum "$source_file" | awk '{print $1}')
+    backup_hash=$(sha256sum "$backup_file" | awk '{print $1}')
 
     if [[ "$source_hash" == "$backup_hash" ]]; then
         echo "🛡️  Integrity Check: MATCHED"
