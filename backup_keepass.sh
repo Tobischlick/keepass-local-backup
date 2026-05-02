@@ -58,6 +58,26 @@ handle_wait() {
     fi
 }
 
+# Function to verify file integrity using SHA-256
+verify_checksum() {
+    local source_file="$1"
+    local backup_file="$2"
+
+    echo "🔍 Verifying integrity (SHA-256)..."
+
+    # Calculate hashes
+    local source_hash=$(sha256sum "$source_file" | awk '{print $1}')
+    local backup_hash=$(sha256sum "$backup_file" | awk '{print $1}')
+
+    if [[ "$source_hash" == "$backup_hash" ]]; then
+        echo "🛡️  Integrity Check: MATCHED"
+        return 0
+    else
+        echo "🚨 Integrity Check: FAILED (Hash mismatch!)"
+        return 1
+    fi
+}
+
 # Function to perform the cleanup of old files
 cleanup_old_backups() {
     find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
@@ -87,10 +107,20 @@ if [[ -f "$SOURCE_DB" ]]; then
     FILENAME=$(basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${FILENAME}_backup_$TIMESTAMP.kdbx"
 
+    # Attempt Copy
     if cp "$SOURCE_DB" "$DESTINATION"; then
-        cleanup_old_backups
-        log_message "success" "KeePass Backup" "✅ Backup successful: $FILENAME"
-        echo "📂 Saved to: $DESTINATION"
+
+        # Verify Integrity
+        if verify_checksum "$SOURCE_DB" "$DESTINATION"; then
+            cleanup_old_backups
+            log_message "success" "KeePass Backup" "✅ Backup successful: $FILENAME"
+            echo "📂 Saved to: $DESTINATION"
+        else
+            # Remove corrupted file if checksum fails
+            rm "$DESTINATION"
+            log_message "error" "KeePass Backup" "✘ Error: Integrity check failed! Corrupted backup removed."
+            exit 1
+        fi
     else
         log_message "error" "KeePass Backup" "✘ Error: File copy failed!"
         exit 1
