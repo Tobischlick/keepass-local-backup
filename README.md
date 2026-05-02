@@ -10,8 +10,8 @@ A robust, privacy-conscious shell script designed to create timestamped local ba
     - **Manual Mode**: Skip the delay using a simple flag (`--now`) for immediate backups.
 - **Configurable Delay**: Fine-tune your mount-wait time directly in the configuration.
 - **Auto-Cleanup**: Automatically purges old backups based on a custom retention period.
-- **IDE Optimized**: Scripting logic is refined to prevent "word-splitting" warnings in IntelliJ and other IDEs.
 - **Desktop Notifications**: Sends native system alerts for successful backups and critical errors using `notify-send`.
+- **Checksum Verification**: To make sure the backup is created correctly, a checksum is calculated to ensure integrity.
 
 ---
 
