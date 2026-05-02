@@ -1,3 +1,5 @@
+![Tests](https://github.com/Tobischlick/keepass-local-backup/actions/workflows/tests.yml/badge.svg)
+
 # KeePass Local Backup Tool
 
 A robust, privacy-conscious shell script designed to create timestamped local backups of your KeePass (`.kdbx`) database. This tool is specifically optimized for users who sync their database via OneDrive (using `onedriver`), Dropbox, or other cloud services and want an automated local "failsafe" copy.
