@@ -94,7 +94,7 @@ To automate the backup every time you log in to your system, follow these steps 
 
 3. **Fill in the Fields**:
     * **Name**: `KeePass Auto-Backup`
-    * **Command**: `/home/YOUR_USERNAME/keepass-local-backup/backup_keepass.sh`
+    * **Command**: `/home/YOUR_USERNAME/keepass-local-backup/src/backup_keepass.sh`
       *(Ensure you use the absolute path to your script folder)*
     * **Comment**: `Creates a local backup of the cloud-synced database after the cloud drive mounts.`
 
