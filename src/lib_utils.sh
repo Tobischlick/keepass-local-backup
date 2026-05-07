@@ -43,14 +43,23 @@ load_config() {
     fi
 }
 
-# Added back to the library
 handle_wait() {
     if [[ "$1" == "--now" ]] || [[ "$1" == "-n" ]]; then
         echo "🚀 Skipping wait (Manual Mode)..."
     else
         local delay=${SLEEP_DELAY:-30}
-        log_message "info" "KeePass Backup" "⏳ System startup: Waiting ${delay}s for mount..."
-        sleep "$delay"
+
+        log_message "info" "KeePass Backup" "⏳ Initialization: Waiting ${delay}s..."
+
+        echo "⏳ Waiting for system to settle..."
+
+        while [ "$delay" -gt 0 ]; do
+            printf "\r   [ %02ds remaining ]           " "$delay"
+            sleep 1
+            ((delay--))
+        done
+
+        printf "\r✅ Environment Ready!          \n"
     fi
 }
 
