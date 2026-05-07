@@ -28,7 +28,7 @@ if [[ -f "$SOURCE_DB" ]]; then
         exit 1
     fi
 
-    TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
+    TIMESTAMP=$(date +"%Y-%m-%d_%H:%M:%S")
     FILENAME=$(basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${FILENAME}_backup_$TIMESTAMP.kdbx"
 
