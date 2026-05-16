@@ -4,21 +4,23 @@
 ![GitHub](https://img.shields.io/github/license/Tobischlick/keepass-local-backup)
 ![GitHub top language](https://img.shields.io/github/languages/top/Tobischlick/keepass-local-backup)
 
-# KeePass Local Backup Tool
+# KeePass Local Backup Tool 🛡️
 
 A robust, privacy-conscious shell script designed to create timestamped local backups of your KeePass (`.kdbx`) database. This tool is specifically optimized for users who sync their database via OneDrive (using `onedriver`), Dropbox, or other cloud services and want an automated local "failsafe" copy.
 
 ## ✨ Features
 - **Smart Variable Loading**: Uses `.env` files to keep your private folder structure and file names out of version control.
-- **Visual Status Reporting**: Provides real-time feedback with clear symbols (✔, ⏳, ✅) and path verification.
-- **Dual Mode Execution**:
-    - **Startup Mode**: Includes a configurable safety delay to allow cloud services to mount.
-    - **Manual Mode**: Skip the delay using a simple flag (`--now`) for immediate backups.
+- **Visual Status Reporting**: Provides real-time feedback with clear terminal feedback, progress bars, and path verification.
+- **Idempotency (Smart Skipping) 💡**: Automatically skips creation if a backup already exists for the current day and the checksum matches your source file, saving disk space.
+- **Execution Modes**:
+    - **Startup Mode**: Includes a configurable safety delay with an interactive terminal countdown to allow cloud services to mount.
+    - **Manual Mode**: Skip the delay using flags (`--now` or `-n`) for immediate backups.
+    - **Force Mode**: Override daily smart-skipping logic entirely using flags (`--force` or `-f`).
 - **Configurable Delay**: Fine-tune your mount-wait time directly in the configuration.
 - **Auto-Cleanup**: Automatically purges old backups based on a custom retention period.
 - **Desktop Notifications**: Sends native system alerts for successful backups and critical errors using `notify-send`.
-- **Checksum Verification**: To make sure the backup is created correctly, a checksum is calculated to ensure integrity.
-- **File Type Verification**: Checks, whether the file is actually a valid keepass file.
+- **Checksum Verification**: Calculates and verifies SHA-256 hashes to guarantee backup integrity.
+- **File Type Verification**: Validates the MIME-type to ensure the file is an authentic KeePass database before copying.
 
 ---
 
@@ -70,7 +72,16 @@ RETENTION_DAYS=7
 SLEEP_DELAY=30
 ```
 
-### Usage
+### 5. Usage
+
+#### Available Options & Flags
+
+| Long Flag | Short Flag | Description |
+| :--- | :--- | :--- |
+| `--now` | `-n` | Bypasses the configured `SLEEP_DELAY` safety countdown for immediate execution. |
+| `--force` | `-f` | Overrides the daily smart-skipping logic, forcing a fresh backup snapshot even if an identical duplicate already exists for today. |
+
+---
 
 #### Manual Backup (Immediate)
 Use this mode when you are already logged in and want to trigger a backup instantly. The `--now` or `-n` flag bypasses the configured `SLEEP_DELAY`.

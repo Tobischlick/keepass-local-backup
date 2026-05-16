@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2153
 
 # --- Library Functions ---
 
@@ -100,4 +101,37 @@ verify_checksum() {
 cleanup_old_backups() {
     find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
     echo "🧹 Cleaned up backups older than $RETENTION_DAYS days."
+}
+
+check_daily_duplicate() {
+    local source_file="$1"
+    local backup_dir="$2"
+
+    local today
+    today=$(date +"%Y-%m-%d")
+
+    # Extract structural file base pattern to accurately query matching daily backups
+    local file_base
+    file_base=$(basename "$source_file")
+    file_base="${file_base%.*}"
+
+    local existing_backup
+    existing_backup=$(find "$backup_dir" -name "${file_base}_backup_${today}_*.kdbx" -type f -print -quit 2>/dev/null)
+
+    if [[ -n "$existing_backup" ]]; then
+        echo "🔍 Found an existing backup for today. Checking if file changed..."
+
+        local source_hash
+        local backup_hash
+        source_hash=$(sha256sum "$source_file" | awk '{print $1}')
+        backup_hash=$(sha256sum "$existing_backup" | awk '{print $1}')
+
+        if [[ "$source_hash" == "$backup_hash" ]]; then
+            return 0 # Exact duplicate found! (True)
+        else
+            echo "🔄 Changes detected in the database since last daily backup. Creating a new snapshot..."
+        fi
+    fi
+
+    return 1 # Safe to make a new backup
 }
