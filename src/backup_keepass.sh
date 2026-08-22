@@ -56,7 +56,7 @@ if [[ -f "$SOURCE_DB" ]]; then
     TIMESTAMP=$(date +"%Y-%m-%d_%H:%M:%S")
     FILENAME=$(basename "$SOURCE_DB")
 
-    BASE_NAME="${FILENAME%.*}"
+    BASE_NAME=$(build_backup_basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${BASE_NAME}_backup_$TIMESTAMP.kdbx"
 
     if cp "$SOURCE_DB" "$DESTINATION"; then
