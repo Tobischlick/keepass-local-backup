@@ -60,6 +60,15 @@ cd src && ./backup_keepass.sh --now
   to `.github/workflows/tests.yml` explicitly (nothing is auto-discovered).
 - ShellCheck only scans `src/`, so lint-clean code matters most there.
 
+## Before starting any task
+
+Always pull the latest `main` before doing anything in this repo (creating a
+branch, editing files, etc.):
+
+```bash
+git checkout main && git pull
+```
+
 ## Branching & commit conventions
 
 **Branches**
