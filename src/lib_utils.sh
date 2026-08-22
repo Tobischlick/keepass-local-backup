@@ -21,27 +21,53 @@ log_message() {
     notify-send "$title" "$message" -u "$urgency" -i "$icon" -t 5000
 }
 
+validate_config() {
+    if [[ -z "$SOURCE_DB" ]]; then
+        log_message "error" "KeePass Backup" "❌ Error: SOURCE_DB is not set in .env!"
+        return 1
+    fi
+
+    if [[ -z "$BACKUP_DIR" ]]; then
+        log_message "error" "KeePass Backup" "❌ Error: BACKUP_DIR is not set in .env!"
+        return 1
+    fi
+
+    if [[ ! "$RETENTION_DAYS" =~ ^[0-9]+$ ]]; then
+        log_message "error" "KeePass Backup" "❌ Error: RETENTION_DAYS must be a whole number (got '$RETENTION_DAYS')!"
+        return 1
+    fi
+
+    if [[ -n "$SLEEP_DELAY" && ! "$SLEEP_DELAY" =~ ^[0-9]+$ ]]; then
+        log_message "error" "KeePass Backup" "❌ Error: SLEEP_DELAY must be a whole number (got '$SLEEP_DELAY')!"
+        return 1
+    fi
+
+    return 0
+}
+
 load_config() {
     local root_dir
     root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-    if [[ -f "$root_dir/.env" ]]; then
-        set -a
-        # shellcheck source=/dev/null
-        source "$root_dir/.env"
-        set +a
-        echo "✔ Found .env file at $root_dir/.env"
-        echo "------------------------------------------------"
-        echo "  Properties Loaded:"
-        echo "  SOURCE_DB:    $SOURCE_DB"
-        echo "  BACKUP_DIR:   $BACKUP_DIR"
-        echo "  RETENTION:    $RETENTION_DAYS days"
-        echo "  STARTUP WAIT: ${SLEEP_DELAY:-30} seconds"
-        echo "------------------------------------------------"
-        return 0
-    else
+    if [[ ! -f "$root_dir/.env" ]]; then
+        log_message "error" "KeePass Backup" "❌ Error: .env file not found at $root_dir/.env!"
         return 1
     fi
+
+    set -a
+    # shellcheck source=/dev/null
+    source "$root_dir/.env"
+    set +a
+    echo "✔ Found .env file at $root_dir/.env"
+    echo "------------------------------------------------"
+    echo "  Properties Loaded:"
+    echo "  SOURCE_DB:    $SOURCE_DB"
+    echo "  BACKUP_DIR:   $BACKUP_DIR"
+    echo "  RETENTION:    $RETENTION_DAYS days"
+    echo "  STARTUP WAIT: ${SLEEP_DELAY:-30} seconds"
+    echo "------------------------------------------------"
+
+    validate_config
 }
 
 handle_wait() {

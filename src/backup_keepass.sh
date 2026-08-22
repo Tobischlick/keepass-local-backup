@@ -21,7 +21,6 @@ done
 # 3. Load Config (Only if variables are not already injected by integration tests)
 if [[ -z "$SOURCE_DB" || -z "$BACKUP_DIR" ]]; then
     if ! load_config; then
-        log_message "error" "KeePass Backup" "❌ Error: .env file not found!"
         exit 1
     fi
 fi
