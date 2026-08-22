@@ -33,3 +33,6 @@ jobs:
 
       - name: Run Config & Timing Tests
         run: ./tests/test_config.sh
+
+      - name: Run Filename Pattern Tests
+        run: ./tests/test_filename_pattern.sh
