@@ -98,6 +98,13 @@ verify_checksum() {
     fi
 }
 
+build_backup_basename() {
+    local source_file="$1"
+    local filename
+    filename=$(basename "$source_file")
+    echo "${filename%.*}"
+}
+
 cleanup_old_backups() {
     find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
     echo "🧹 Cleaned up backups older than $RETENTION_DAYS days."
@@ -110,10 +117,8 @@ check_daily_duplicate() {
     local today
     today=$(date +"%Y-%m-%d")
 
-    # Extract structural file base pattern to accurately query matching daily backups
     local file_base
-    file_base=$(basename "$source_file")
-    file_base="${file_base%.*}"
+    file_base=$(build_backup_basename "$source_file")
 
     local existing_backups
     existing_backups=$(find "$backup_dir" -name "${file_base}_backup_${today}_*.kdbx" -type f 2>/dev/null)
