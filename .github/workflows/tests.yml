@@ -36,3 +36,6 @@ jobs:
 
       - name: Run Filename Pattern Tests
         run: ./tests/test_filename_pattern.sh
+
+      - name: Run Daily Duplicate Tests
+        run: ./tests/test_daily_duplicate.sh

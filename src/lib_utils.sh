@@ -115,22 +115,25 @@ check_daily_duplicate() {
     file_base=$(basename "$source_file")
     file_base="${file_base%.*}"
 
-    local existing_backup
-    existing_backup=$(find "$backup_dir" -name "${file_base}_backup_${today}_*.kdbx" -type f -print -quit 2>/dev/null)
+    local existing_backups
+    existing_backups=$(find "$backup_dir" -name "${file_base}_backup_${today}_*.kdbx" -type f 2>/dev/null)
 
-    if [[ -n "$existing_backup" ]]; then
-        echo "🔍 Found an existing backup for today. Checking if file changed..."
+    if [[ -n "$existing_backups" ]]; then
+        echo "🔍 Found existing backup(s) for today. Checking if file changed..."
 
         local source_hash
-        local backup_hash
         source_hash=$(sha256sum "$source_file" | awk '{print $1}')
-        backup_hash=$(sha256sum "$existing_backup" | awk '{print $1}')
 
-        if [[ "$source_hash" == "$backup_hash" ]]; then
-            return 0 # Exact duplicate found! (True)
-        else
-            echo "🔄 Changes detected in the database since last daily backup. Creating a new snapshot..."
-        fi
+        local existing_backup
+        local backup_hash
+        while IFS= read -r existing_backup; do
+            backup_hash=$(sha256sum "$existing_backup" | awk '{print $1}')
+            if [[ "$source_hash" == "$backup_hash" ]]; then
+                return 0 # Exact duplicate found among today's backups! (True)
+            fi
+        done <<< "$existing_backups"
+
+        echo "🔄 Changes detected in the database since last daily backup. Creating a new snapshot..."
     fi
 
     return 1 # Safe to make a new backup
