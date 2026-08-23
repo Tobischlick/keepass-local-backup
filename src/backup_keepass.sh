@@ -32,7 +32,7 @@ handle_wait "$NOW_FLAG"
 
 # 5. Verify Directory
 if ! mkdir -p "$BACKUP_DIR"; then
-    log_message "error" "KeePass Backup" "✘ Error: Backup directory inaccessible!"
+    log_message "error" "KeePass Backup" "❌ Error: Backup directory inaccessible!"
     exit 1
 fi
 
@@ -48,13 +48,15 @@ fi
 if [[ -f "$SOURCE_DB" ]]; then
 
     if ! verify_file_type "$SOURCE_DB"; then
-        log_message "error" "KeePass Backup" "✘ Error: Source is not a valid KeePass file!"
+        log_message "error" "KeePass Backup" "❌ Error: Source is not a valid KeePass file!"
         exit 1
     fi
 
+    SOURCE_HASH=$(sha256sum "$SOURCE_DB" | awk '{print $1}')
+
     # Check for duplicate file for today unless --force is used
     if [[ "$FORCE_BACKUP" == false ]]; then
-        if check_daily_duplicate "$SOURCE_DB" "$BACKUP_DIR"; then
+        if check_daily_duplicate "$SOURCE_DB" "$BACKUP_DIR" "$SOURCE_HASH"; then
             log_message "success" "KeePass Backup" "✅ Skip: A matching backup already exists for today."
             echo "💡 Tip: Use -f or --force if you want to overwrite or create a secondary copy."
             exit 0
@@ -69,24 +71,24 @@ if [[ -f "$SOURCE_DB" ]]; then
     DESTINATION="$BACKUP_DIR/${BASE_NAME}_backup_$TIMESTAMP.kdbx"
 
     if [[ "$DRY_RUN" == true ]]; then
-        cleanup_old_backups "$DRY_RUN"
+        cleanup_old_backups "$BACKUP_DIR" "$RETENTION_DAYS" "$DRY_RUN"
         log_message "success" "KeePass Backup" "✅ [Dry Run] Would back up: $FILENAME"
         echo "📂 Would save to: $DESTINATION"
     elif cp "$SOURCE_DB" "$DESTINATION"; then
-        if verify_checksum "$SOURCE_DB" "$DESTINATION"; then
-            cleanup_old_backups
+        if verify_checksum "$SOURCE_DB" "$DESTINATION" "$SOURCE_HASH"; then
+            cleanup_old_backups "$BACKUP_DIR" "$RETENTION_DAYS"
             log_message "success" "KeePass Backup" "✅ Backup successful: $FILENAME"
             echo "📂 Saved to: $DESTINATION"
         else
             rm "$DESTINATION"
-            log_message "error" "KeePass Backup" "✘ Error: Integrity check failed!"
+            log_message "error" "KeePass Backup" "❌ Error: Integrity check failed!"
             exit 1
         fi
     else
-        log_message "error" "KeePass Backup" "✘ Error: File copy failed!"
+        log_message "error" "KeePass Backup" "❌ Error: File copy failed!"
         exit 1
     fi
 else
-    log_message "error" "KeePass Backup" "✘ Error: Source database not found!"
+    log_message "error" "KeePass Backup" "❌ Error: Source database not found!"
     exit 1
 fi

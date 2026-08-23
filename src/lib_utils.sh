@@ -116,12 +116,14 @@ verify_file_type() {
 verify_checksum() {
     local source_file="$1"
     local backup_file="$2"
+    local source_hash="$3"
     echo "🔍 Verifying integrity (SHA-256)..."
 
-    local source_hash
     local backup_hash
 
-    source_hash=$(sha256sum "$source_file" | awk '{print $1}')
+    if [[ -z "$source_hash" ]]; then
+        source_hash=$(sha256sum "$source_file" | awk '{print $1}')
+    fi
     backup_hash=$(sha256sum "$backup_file" | awk '{print $1}')
 
     if [[ "$source_hash" == "$backup_hash" ]]; then
@@ -141,21 +143,24 @@ build_backup_basename() {
 }
 
 cleanup_old_backups() {
-    local dry_run="$1"
+    local backup_dir="$1"
+    local retention_days="$2"
+    local dry_run="$3"
 
     if [[ "$dry_run" == true ]]; then
         local stale_count
-        stale_count=$(find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" | wc -l)
-        echo "🧹 [Dry Run] Would delete $stale_count backup(s) older than $RETENTION_DAYS days."
+        stale_count=$(find "$backup_dir" -name "*.kdbx" -type f -mtime +"$retention_days" | wc -l)
+        echo "🧹 [Dry Run] Would delete $stale_count backup(s) older than $retention_days days."
     else
-        find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
-        echo "🧹 Cleaned up backups older than $RETENTION_DAYS days."
+        find "$backup_dir" -name "*.kdbx" -type f -mtime +"$retention_days" -delete
+        echo "🧹 Cleaned up backups older than $retention_days days."
     fi
 }
 
 check_daily_duplicate() {
     local source_file="$1"
     local backup_dir="$2"
+    local source_hash="$3"
 
     local today
     today=$(date +"%Y-%m-%d")
@@ -169,8 +174,9 @@ check_daily_duplicate() {
     if [[ -n "$existing_backups" ]]; then
         echo "🔍 Found existing backup(s) for today. Checking if file changed..."
 
-        local source_hash
-        source_hash=$(sha256sum "$source_file" | awk '{print $1}')
+        if [[ -z "$source_hash" ]]; then
+            source_hash=$(sha256sum "$source_file" | awk '{print $1}')
+        fi
 
         local existing_backup
         local backup_hash
