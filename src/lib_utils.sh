@@ -137,8 +137,16 @@ build_backup_basename() {
 }
 
 cleanup_old_backups() {
-    find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
-    echo "🧹 Cleaned up backups older than $RETENTION_DAYS days."
+    local dry_run="$1"
+
+    if [[ "$dry_run" == true ]]; then
+        local stale_count
+        stale_count=$(find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" | wc -l)
+        echo "🧹 [Dry Run] Would delete $stale_count backup(s) older than $RETENTION_DAYS days."
+    else
+        find "$BACKUP_DIR" -name "*.kdbx" -type f -mtime +"$RETENTION_DAYS" -delete
+        echo "🧹 Cleaned up backups older than $RETENTION_DAYS days."
+    fi
 }
 
 check_daily_duplicate() {
