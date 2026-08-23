@@ -67,3 +67,26 @@ else
     echo "❌ Failed: validate_config rejected an unset SLEEP_DELAY!"
     exit 1
 fi
+
+# Test: log_message appends a timestamped entry to LOG_FILE when set
+notify-send() { :; }  # stub: no desktop session in CI
+
+LOG_FILE=$(mktemp)
+log_message "info" "Test" "Hello from test"
+
+if grep -q "Hello from test" "$LOG_FILE"; then
+    echo "✅ Passed: log_message appended the message to LOG_FILE."
+else
+    echo "❌ Failed: log_message did not write to LOG_FILE!"
+    exit 1
+fi
+rm -f "$LOG_FILE"
+
+# Test: log_message succeeds with no file side effect when LOG_FILE is unset
+unset LOG_FILE
+if log_message "info" "Test" "No file logging" > /dev/null; then
+    echo "✅ Passed: log_message succeeded with LOG_FILE unset."
+else
+    echo "❌ Failed: log_message failed when LOG_FILE was unset!"
+    exit 1
+fi

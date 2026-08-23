@@ -19,6 +19,10 @@ log_message() {
     fi
 
     notify-send "$title" "$message" -u "$urgency" -i "$icon" -t 5000
+
+    if [[ -n "$LOG_FILE" ]]; then
+        echo "$(date +"%Y-%m-%d %H:%M:%S") [$type] $message" >> "$LOG_FILE"
+    fi
 }
 
 validate_config() {
@@ -65,6 +69,7 @@ load_config() {
     echo "  BACKUP_DIR:   $BACKUP_DIR"
     echo "  RETENTION:    $RETENTION_DAYS days"
     echo "  STARTUP WAIT: ${SLEEP_DELAY:-30} seconds"
+    echo "  LOG FILE:     ${LOG_FILE:-Disabled}"
     echo "------------------------------------------------"
 
     validate_config
