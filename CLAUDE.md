@@ -28,12 +28,14 @@ ask the user first — every time, no exceptions from prior approval.
 - [src/lib_utils.sh](src/lib_utils.sh) — all the logic, sourced by the
   entrypoint: `log_message`, `load_config`, `handle_wait`, `verify_file_type`,
   `verify_checksum`, `cleanup_old_backups`, `check_daily_duplicate`.
-- [tests/](tests/) — three standalone scripts (`test_config.sh`,
-  `test_integrity.sh`, `test_validation.sh`), each sourcing `lib_utils.sh`
-  directly and asserting via exit codes. No test framework.
+- [tests/](tests/) — seven standalone scripts (`test_config.sh`,
+  `test_integrity.sh`, `test_validation.sh`, `test_filename_pattern.sh`,
+  `test_daily_duplicate.sh`, `test_dry_run.sh`, `test_lock.sh`), each
+  sourcing `lib_utils.sh` directly and asserting via exit codes. No test
+  framework.
 - `.env` (gitignored, user-provided; see [.env.example](.env.example)) —
   `SOURCE_DB`, `BACKUP_DIR`, `RETENTION_DAYS`, `SLEEP_DELAY`.
-- [.github/workflows/tests.yml](.github/workflows/tests.yml) — runs the three
+- [.github/workflows/tests.yml](.github/workflows/tests.yml) — runs the seven
   test scripts on push/PR to `main`.
 - [.github/workflows/lint.yml](.github/workflows/lint.yml) — ShellCheck over
   `src/` only (tests are not linted).
@@ -41,7 +43,7 @@ ask the user first — every time, no exceptions from prior approval.
 ## Running things locally
 
 ```bash
-chmod +x tests/*.sh && ./tests/test_validation.sh && ./tests/test_integrity.sh && ./tests/test_config.sh
+chmod +x tests/*.sh && ./tests/test_validation.sh && ./tests/test_integrity.sh && ./tests/test_config.sh && ./tests/test_filename_pattern.sh && ./tests/test_daily_duplicate.sh && ./tests/test_dry_run.sh && ./tests/test_lock.sh
 ```
 
 ```bash
