@@ -119,3 +119,42 @@ To automate the backup every time you log in to your system, follow these steps 
 
 5. **Save**:
    Click **Add** and then **Close**. The backup will now trigger automatically upon your next login.
+
+#### Automatic Backup (systemd user timer)
+
+For headless machines or servers without a desktop session, a systemd user
+timer is a more reliable alternative to Startup Applications.
+
+1. **Create the service unit** at `~/.config/systemd/user/keepass-backup.service`:
+   ```ini
+   [Unit]
+   Description=KeePass Local Backup
+
+   [Service]
+   Type=oneshot
+   ExecStart=/home/YOUR_USERNAME/keepass-local-backup/src/backup_keepass.sh
+   ```
+   *(Use the absolute path to your script. No `--now` flag — the script's own `SLEEP_DELAY` still waits for the cloud drive to mount.)*
+
+2. **Create the timer unit** at `~/.config/systemd/user/keepass-backup.timer`:
+   ```ini
+   [Unit]
+   Description=Run KeePass Local Backup shortly after login
+
+   [Timer]
+   OnStartupSec=1min
+
+   [Install]
+   WantedBy=timers.target
+   ```
+
+3. **Enable and start the timer**:
+   ```bash
+   systemctl --user daemon-reload
+   systemctl --user enable --now keepass-backup.timer
+   ```
+
+4. **Allow the timer to run without an active login session**:
+   ```bash
+   loginctl enable-linger $USER
+   ```
