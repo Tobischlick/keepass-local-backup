@@ -17,6 +17,40 @@ else
     exit 1
 fi
 
+# Test: handle_wait breaks early once SOURCE_DB exists, instead of waiting
+# out the full SLEEP_DELAY
+SOURCE_DB=$(mktemp)
+SLEEP_DELAY=10
+
+start=$(date +%s)
+output=$(handle_wait)
+end=$(date +%s)
+runtime=$((end-start))
+
+if [ $runtime -lt 2 ] && [[ "$output" == *"Environment Ready"* ]]; then
+    echo "✅ Passed: handle_wait returned early once SOURCE_DB existed."
+else
+    echo "❌ Failed: handle_wait did not break early for an existing SOURCE_DB!"
+    exit 1
+fi
+rm -f "$SOURCE_DB"
+
+# Test: handle_wait times out after SLEEP_DELAY when SOURCE_DB never appears
+SOURCE_DB="/tmp/does-not-exist-$$.kdbx"
+SLEEP_DELAY=2
+
+start=$(date +%s)
+output=$(handle_wait)
+end=$(date +%s)
+runtime=$((end-start))
+
+if [ $runtime -ge 2 ] && [[ "$output" == *"Timed out"* ]]; then
+    echo "✅ Passed: handle_wait timed out after SLEEP_DELAY."
+else
+    echo "❌ Failed: handle_wait did not time out as expected!"
+    exit 1
+fi
+
 # Test: validate_config accepts a well-formed config
 SOURCE_DB="/tmp/does-not-matter.kdbx"
 BACKUP_DIR="/tmp/does-not-matter-backups"

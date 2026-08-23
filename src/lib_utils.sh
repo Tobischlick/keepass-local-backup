@@ -79,19 +79,23 @@ handle_wait() {
     if [[ "$1" == "--now" ]] || [[ "$1" == "-n" ]]; then
         echo "🚀 Skipping wait (Manual Mode)..."
     else
-        local delay=${SLEEP_DELAY:-30}
+        local timeout=${SLEEP_DELAY:-30}
+        local elapsed=0
 
-        log_message "info" "KeePass Backup" "⏳ Initialization: Waiting ${delay}s..."
-
+        log_message "info" "KeePass Backup" "⏳ Initialization: Waiting up to ${timeout}s for mount..."
         echo "⏳ Waiting for system to settle..."
 
-        while [ "$delay" -gt 0 ]; do
-            printf "\r   [ %02ds remaining ]           " "$delay"
+        while [[ "$elapsed" -lt "$timeout" ]] && [[ ! -f "$SOURCE_DB" ]]; do
+            printf "\r   [ %02ds elapsed / %02ds max ]           " "$elapsed" "$timeout"
             sleep 1
-            ((delay--))
+            ((elapsed++))
         done
 
-        printf "\r✅ Environment Ready!          \n"
+        if [[ -f "$SOURCE_DB" ]]; then
+            printf "\r✅ Environment Ready! (%ds)          \n" "$elapsed"
+        else
+            printf "\r⚠️  Timed out after %ds waiting for mount!\n" "$timeout"
+        fi
     fi
 }
 
