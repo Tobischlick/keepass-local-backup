@@ -18,8 +18,9 @@ A robust, privacy-conscious shell script designed to create timestamped local ba
     - **Force Mode**: Override daily smart-skipping logic entirely using flags (`--force` or `-f`).
 - **Configurable Delay**: Fine-tune your mount-wait time directly in the configuration.
 - **Auto-Cleanup**: Automatically purges old backups based on a custom retention period.
-- **Desktop Notifications**: Sends native system alerts for successful backups and critical errors using `notify-send`.
+- **Desktop Notifications**: Sends native system alerts for successful backups and critical errors using `notify-send` (skipped gracefully if it isn't installed).
 - **Persistent Logging (optional)**: Set `LOG_FILE` to also append timestamped log entries to a file — useful for cron/systemd runs where no desktop session is active to catch the notification.
+- **Concurrency-Safe**: Uses a lock file in `BACKUP_DIR` so overlapping runs (e.g. autostart + systemd timer) never race each other.
 - **Checksum Verification**: Calculates and verifies SHA-256 hashes to guarantee backup integrity.
 - **File Type Verification**: Validates the MIME-type to ensure the file is an authentic KeePass database before copying.
 

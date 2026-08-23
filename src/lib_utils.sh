@@ -18,7 +18,7 @@ log_message() {
         icon="security-high"
     fi
 
-    notify-send "$title" "$message" -u "$urgency" -i "$icon" -t 5000
+    command -v notify-send &>/dev/null && notify-send "$title" "$message" -u "$urgency" -i "$icon" -t 5000
 
     if [[ -n "$LOG_FILE" ]]; then
         echo "$(date +"%Y-%m-%d %H:%M:%S") [$type] $message" >> "$LOG_FILE"

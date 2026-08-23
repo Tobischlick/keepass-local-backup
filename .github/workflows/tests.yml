@@ -42,3 +42,6 @@ jobs:
 
       - name: Run Dry Run Tests
         run: ./tests/test_dry_run.sh
+
+      - name: Run Lock Tests
+        run: ./tests/test_lock.sh
