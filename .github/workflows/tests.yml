@@ -39,3 +39,6 @@ jobs:
 
       - name: Run Daily Duplicate Tests
         run: ./tests/test_daily_duplicate.sh
+
+      - name: Run Dry Run Tests
+        run: ./tests/test_dry_run.sh

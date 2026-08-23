@@ -83,6 +83,7 @@ LOG_FILE="/home/miriam-musterfrau/Documents/KeePassBackups/backup.log"
 | :--- | :--- | :--- |
 | `--now` | `-n` | Bypasses the configured `SLEEP_DELAY` safety countdown for immediate execution. |
 | `--force` | `-f` | Overrides the daily smart-skipping logic, forcing a fresh backup snapshot even if an identical duplicate already exists for today. |
+| `--dry-run` | `-d` | Previews the backup workflow without copying files or deleting old backups. |
 
 ---
 

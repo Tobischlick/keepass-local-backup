@@ -5,14 +5,16 @@ SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "$SRC_DIR/lib_utils.sh"
 
-# 2. Parse arguments (Supports flags: -n/--now and -f/--force)
+# 2. Parse arguments (Supports flags: -n/--now, -f/--force, -d/--dry-run)
 FORCE_BACKUP=false
+DRY_RUN=false
 NOW_FLAG=""
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        -n|--now)   NOW_FLAG="--now" ;;
-        -f|--force) FORCE_BACKUP=true ;;
+        -n|--now)     NOW_FLAG="--now" ;;
+        -f|--force)   FORCE_BACKUP=true ;;
+        -d|--dry-run) DRY_RUN=true ;;
         *) echo "❌ Error: Unknown parameter: $1"; exit 1 ;;
     esac
     shift
@@ -58,7 +60,11 @@ if [[ -f "$SOURCE_DB" ]]; then
     BASE_NAME=$(build_backup_basename "$SOURCE_DB")
     DESTINATION="$BACKUP_DIR/${BASE_NAME}_backup_$TIMESTAMP.kdbx"
 
-    if cp "$SOURCE_DB" "$DESTINATION"; then
+    if [[ "$DRY_RUN" == true ]]; then
+        cleanup_old_backups "$DRY_RUN"
+        log_message "success" "KeePass Backup" "✅ [Dry Run] Would back up: $FILENAME"
+        echo "📂 Would save to: $DESTINATION"
+    elif cp "$SOURCE_DB" "$DESTINATION"; then
         if verify_checksum "$SOURCE_DB" "$DESTINATION"; then
             cleanup_old_backups
             log_message "success" "KeePass Backup" "✅ Backup successful: $FILENAME"
