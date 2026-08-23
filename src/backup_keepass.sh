@@ -36,6 +36,14 @@ if ! mkdir -p "$BACKUP_DIR"; then
     exit 1
 fi
 
+# 5b. Acquire lock to prevent concurrent runs from racing
+LOCK_FILE="$BACKUP_DIR/.backup.lock"
+exec 200>"$LOCK_FILE"
+if ! flock -n 200; then
+    log_message "success" "KeePass Backup" "✅ Skip: A backup is already running for this destination."
+    exit 0
+fi
+
 # 6. Execute Workflow
 if [[ -f "$SOURCE_DB" ]]; then
 

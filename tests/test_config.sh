@@ -124,3 +124,13 @@ else
     echo "❌ Failed: log_message failed when LOG_FILE was unset!"
     exit 1
 fi
+
+# Test: log_message succeeds when notify-send isn't installed at all
+# (guards the command -v check, not just the stubbed function above)
+unset -f notify-send
+if PATH="" log_message "info" "Test" "No notify-send available" > /dev/null; then
+    echo "✅ Passed: log_message succeeded when notify-send was unavailable."
+else
+    echo "❌ Failed: log_message failed when notify-send was unavailable!"
+    exit 1
+fi
