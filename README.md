@@ -19,6 +19,7 @@ A robust, privacy-conscious shell script designed to create timestamped local ba
 - **Configurable Delay**: Fine-tune your mount-wait time directly in the configuration.
 - **Auto-Cleanup**: Automatically purges old backups based on a custom retention period.
 - **Desktop Notifications**: Sends native system alerts for successful backups and critical errors using `notify-send`.
+- **Persistent Logging (optional)**: Set `LOG_FILE` to also append timestamped log entries to a file — useful for cron/systemd runs where no desktop session is active to catch the notification.
 - **Checksum Verification**: Calculates and verifies SHA-256 hashes to guarantee backup integrity.
 - **File Type Verification**: Validates the MIME-type to ensure the file is an authentic KeePass database before copying.
 
@@ -63,6 +64,7 @@ The tool is entirely controlled via the `.env` file. Below are the available par
 | `BACKUP_DIR` | **Absolute path** to the local folder for storing backups. | `"/home/user/Documents/KeePassBackups"`     |
 | `RETENTION_DAYS` | Number of days to keep a backup before auto-deletion. | `7`                                         |
 | `SLEEP_DELAY` | Seconds to wait on startup for cloud drives to mount. | `30`                                        |
+| `LOG_FILE` | Optional. Absolute path to a file where log entries are appended with a timestamp. Leave unset to disable file logging. | `"/home/user/Documents/KeePassBackups/backup.log"` |
 
 ### Example .env File
 ```text
@@ -70,6 +72,7 @@ SOURCE_DB="/home/miriam-musterfrau/OneDrive/Passwords/Database.kdbx"
 BACKUP_DIR="/home/miriam-musterfrau/Documents/KeePassBackups"
 RETENTION_DAYS=7
 SLEEP_DELAY=30
+LOG_FILE="/home/miriam-musterfrau/Documents/KeePassBackups/backup.log"
 ```
 
 ### 5. Usage

@@ -9,6 +9,17 @@ KeePass (`.kdbx`) database, aimed at users who sync their database via
 OneDrive/`onedriver`, Dropbox, etc., and want a local "failsafe" copy. No
 build system, no package manager, no runtime beyond Bash + coreutils.
 
+## Never touch the local `.env` file
+
+`.env` holds the user's real, private config (real `SOURCE_DB`/`BACKUP_DIR`
+paths, etc.) and is gitignored — there is no git history to recover it from
+if it's lost. **Never create, edit, overwrite, delete, commit, or push this
+file under any circumstances, including as a side effect of manual testing
+or verification.** This applies even if a change would otherwise git-ignore
+or exclude it automatically. If a task requires reading, changing, or
+temporarily replacing `.env` (e.g. to manually verify a change), stop and
+ask the user first — every time, no exceptions from prior approval.
+
 ## Structure
 
 - [src/backup_keepass.sh](src/backup_keepass.sh) — entrypoint. Parses CLI
