@@ -10,19 +10,6 @@
       "matchCurrentVersion": "!/^0/",
       "automerge": true,
       "labels": ["automerge"]
-    },
-    {
-      "matchPackagePatterns": ["^org.springframework.boot:"],
-      "groupName": "Spring Boot"
-    },
-    {
-      "matchPackageNames": ["org.projectlombok:lombok"],
-      "groupName": "Lombok",
-      "extends": ["schedule:monthly"]
-    },
-    {
-      "matchPackagePatterns": ["google-api"],
-      "groupName": "Google APIs"
     }
   ],
   "vulnerabilityAlerts": {
