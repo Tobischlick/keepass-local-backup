@@ -7,7 +7,7 @@ FIXTURE_SRC="$TEST_DIR/dryrun_source.kdbx"
 FIXTURE_BACKUP_DIR="$TEST_DIR/dryrun_backup_dir"
 OLD_BACKUP="$FIXTURE_BACKUP_DIR/dryrun_source_backup_2000-01-01_00:00:00.kdbx"
 
-head -c 256 /dev/urandom > "$FIXTURE_SRC"
+{ printf '\x03\xd9\xa2\x9a\x67\xfb\x4b\xb5'; head -c 248 /dev/urandom; } > "$FIXTURE_SRC"
 rm -rf "$FIXTURE_BACKUP_DIR"
 mkdir -p "$FIXTURE_BACKUP_DIR"
 

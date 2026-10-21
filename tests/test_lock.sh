@@ -7,7 +7,7 @@ FIXTURE_SRC="$TEST_DIR/lock_source.kdbx"
 FIXTURE_BACKUP_DIR="$TEST_DIR/lock_backup_dir"
 LOCK_FILE="$FIXTURE_BACKUP_DIR/.backup.lock"
 
-head -c 256 /dev/urandom > "$FIXTURE_SRC"
+{ printf '\x03\xd9\xa2\x9a\x67\xfb\x4b\xb5'; head -c 248 /dev/urandom; } > "$FIXTURE_SRC"
 rm -rf "$FIXTURE_BACKUP_DIR"
 mkdir -p "$FIXTURE_BACKUP_DIR"
 
