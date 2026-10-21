@@ -7,11 +7,11 @@ echo "🧪 Testing: Backup Filename Pattern..."
 FIXTURE_SRC="$TEST_DIR/pattern_source.kdbx"
 FIXTURE_BACKUP_DIR="$TEST_DIR/pattern_backup_dir"
 
-# Use random binary bytes so `file --mime-type` reliably reports
-# application/octet-stream (matches verify_file_type); plain text
-# via `echo` reports text/plain and would be rejected before a
-# destination filename is ever built.
-head -c 256 /dev/urandom > "$FIXTURE_SRC"
+# KeePass 2 magic header + random bytes: the magic pins `file --mime-type`
+# to a type verify_file_type accepts (pure random bytes are occasionally
+# sniffed as e.g. application/x-dosexec); plain text via `echo` reports
+# text/plain and would be rejected before a destination filename is built.
+{ printf '\x03\xd9\xa2\x9a\x67\xfb\x4b\xb5'; head -c 248 /dev/urandom; } > "$FIXTURE_SRC"
 rm -rf "$FIXTURE_BACKUP_DIR"
 
 # Drive the real script end-to-end. SOURCE_DB/BACKUP_DIR/RETENTION_DAYS
