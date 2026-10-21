@@ -4,6 +4,7 @@
     "config:recommended",
     ":timezone(Europe/Berlin)"
   ],
+  "minimumReleaseAge": "3 days",
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
